@@ -1,0 +1,64 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- develop
+- feature/*
+- master
+
+pool:
+  name : myagent
+
+variables:
+  buildConfiguration: 'Release'
+  dotNetFramework: 'net6.0'
+  dotNetVersion: '6.0.300'
+  targetRuntime: 'linux-x64'
+
+stages:
+- stage: 'Build'
+  jobs:
+  - job: 'Build'
+
+    steps:
+    - script: dotnet build --configuration $(buildConfiguration) 
+      displayName: 'dotnet build $(buildConfiguration)'
+
+    - script: dotnet publish --configuration $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)
+      displayName: 'publish Project'
+
+    - script: npm ci
+    - script: npm publish -registry registry=https://pkgs.dev.azure.com/{https://dev.azure.com/sudhakshni}/_packaging/{feed}/npm/registry/always-auth=true
+
+    - task: npmAuthenticate@0
+      inputs:
+       workingFile: .npmrc
+       customEndpoint: # Optional
+
+    - task: Npm@1
+      inputs:
+        command: 'install'
+        workingDir: 'ClientApp'
+  
+    - task: Npm@1
+      inputs:
+         command: 'custom'
+         workingDir: 'clientApp'
+         customCommand: 'run test'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+         ArtifactName: 'drop'
+         publishLocation: 'Container'
+ 
+    - task: DotNetCoreCLI@2
+      displayName: Publish Project
+      inputs:
+          command: 'publish'
+          publishWebProjects: true
+          arguments: '--configuration $(buildConfiguration)'
+          zipAfterPublish: true
+
