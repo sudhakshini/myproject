@@ -23,7 +23,7 @@ stages:
   - job: 'Build'
 
     steps:
-    - script: dotnet build C:/sudha/UHG_Formulary1/dotnetdemo/ClientApp --configuration $(buildConfiguration) 
+    - script: dotnet build C:\sudha\UHG_Formulary1\dotnetdemo\ClientApp --configuration $(buildConfiguration) 
       displayName: 'dotnet build $(buildConfiguration)'
 
     - script: dotnet publish --configuration $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)
@@ -40,12 +40,12 @@ stages:
     - task: Npm@1
       inputs:
         command: 'install'
-        workingDir: 'C:/sudha/UHG_Formulary1/dotnetdemo/ClientApp'
+        workingDir: 'C:\sudha\UHG_Formulary1\dotnetdemo\ClientApp'
   
     - task: Npm@1
       inputs:
          command: 'custom'
-         workingDir: 'C:/sudha/UHG_Formulary1/dotnetdemo/ClientApp'
+         workingDir: 'C:\sudha\UHG_Formulary1\dotnetdemo\ClientApp'
          customCommand: 'run test'
 
     - task: PublishBuildArtifacts@1
